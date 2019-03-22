@@ -1,6 +1,6 @@
 // @TODO: YOUR CODE HERE!
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = 1200;
+var svgHeight = 900;
 
 var margin = {
   top: 20,
@@ -14,7 +14,7 @@ var height = svgHeight - margin.top - margin.bottom;
 
 // svg 
 var svg = d3
-  .select("#scatter")
+  .select(".chart")
   .append("svg")
   .attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -28,16 +28,14 @@ var chosenXAxis = "in_poverty";
 
 // function used for updating x-scale var upon click on axis label
 function xScale(healthData, chosenXAxis) {
-    // create scales
-    var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(healthData, d => d[chosenXAxis]) * 0.8,
-        d3.max(healthData, d => d[chosenXAxis]) * 1.2
-      ])
-      .range([0, width]);
-  
-    return xLinearScale;
-  
-  }
+  // create scales
+  var xLinearScale = d3.scaleLinear()
+  .domain(d3.extent(healthData, d => d.poverty))
+  .range([0, width]);
+
+  return xLinearScale;
+
+}
 
 // function used for updating xAxis var upon click on axis label
 function renderAxes(newXScale, xAxis) {
@@ -75,7 +73,7 @@ function updateToolTip(chosenXAxis, circlesGroup) {
       .attr("class", "tooltip")
       .offset([80, -60])
       .html(function(d) {
-        return (`${d.rockband}<br>${label} ${d[chosenXAxis]}`);
+        return (`${d.poverty}<br>${label} ${d[chosenXAxis]}`);
       });
   
     circlesGroup.call(toolTip);
@@ -92,7 +90,7 @@ function updateToolTip(chosenXAxis, circlesGroup) {
 }
 
   // Retrieve data from the CSV file and execute everything below
-d3.csv("http://localhost:8888/C:/User/Justin/Documents/SMDA201811DATA2/02-Homework/16-D3/Instructionsbak/Instructions/StarterCode/assets/data/data.csv", function(err, healthData) {
+d3.csv("data.csv", function(err, healthData) {
     if (err) throw err;
   
     // parse data
@@ -100,14 +98,17 @@ d3.csv("http://localhost:8888/C:/User/Justin/Documents/SMDA201811DATA2/02-Homewo
       data.poverty = +data.poverty;
       data.healthcare = +data.healthcare;
       data.income = +data.income;
+
+      console.log(data)
     });
+
 
   // xLinearScale function above csv import
   var xLinearScale = xScale(healthData, chosenXAxis);
 
   // Create y scale function
   var yLinearScale = d3.scaleLinear()
-    .domain([0, d3.max(healthData, d => d.healthcare)])
+    .domain([0, d3.max(healthData, data => data.healthcare)])
     .range([height, 0]);
 
     // Create initial axis functions
@@ -129,7 +130,7 @@ d3.csv("http://localhost:8888/C:/User/Justin/Documents/SMDA201811DATA2/02-Homewo
     .data(healthData)
     .enter()
     .append("circle")
-    .attr("cx", d => xLinearScale(d.poverty))
+    .attr("cx", d => xLinearScale(d.income))
     .attr("cy", d => yLinearScale(d.healthcare))
     .attr("r", 20)
     .attr("fill", "pink")
@@ -144,14 +145,7 @@ d3.csv("http://localhost:8888/C:/User/Justin/Documents/SMDA201811DATA2/02-Homewo
     .attr("y", 20)
     .attr("value", "in_poverty") // value to grab for event listener
     .classed("active", true)
-    .text("Hair Metal Ban Hair Length (inches)");
-
-    var incomeLabel = labelsGroup.append("text")
-    .attr("x", 0)
-    .attr("y", 40)
-    .attr("value", "income") // value to grab for event listener
-    .classed("inactive", true)
-    .text("# of Albums Released");
+    .text("In Poverty (%)");
 
       // append y axis
   chartGroup.append("text")
